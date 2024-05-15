@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import WeatherInfo from './components/WeatherInfo';
 import WeatherIcon from './components/WeatherIcon';
 import "bootstrap/dist/css/bootstrap.min.css";
-import './App.css'; // Importez vos styles CSS ici
-const keyApi="96adb4a9f1d70ab53452fa60bcbc9d97";
+import './App.css';
+const keyApi="4a64a166460e5c4f31b7e16f9888c463";
 
 function App() {
   const [city, setCity] = useState('');
