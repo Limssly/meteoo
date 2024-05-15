@@ -1,99 +1,95 @@
-import React, { useState, useEffect } from 'react';
-import WeatherInfo from './components/WeatherInfo';
-import WeatherIcon from './components/WeatherIcon';
-import "bootstrap/dist/css/bootstrap.min.css";
-import './App.css';
-const keyApi="4a64a166460e5c4f31b7e16f9888c463";
-
+import React, { useState, useEffect } from "react";
+import "./App.css";
+import "bootstrap/dist/css/bootstrap.min.css"; // Import Bootstrap CSS
+import { Container, Row, Col, Form, Button } from "react-bootstrap";
 function App() {
-  const [city, setCity] = useState('');
-  const [country, setCountry] = useState('');
-  const [temp, setTemp] = useState('');
-  const [main, setMain] = useState('');
-  const [desc, setDesc] = useState('');
-  const [icon, setIcon] = useState('');
-  const [sunrise, setSunrise] = useState('');
-  const [sunset, setSunset] = useState('');
+  const [latitude, setLatitude] = useState("");
+  const [longitude, setLongitude] = useState("");
+  const [weatherData, setWeatherData] = useState(null);
   const [isReady, setReady] = useState(false);
-  const [latitude, setLatitude] = useState('');
-  const [longitude, setLongitude] = useState('');
 
   useEffect(() => {
     if (latitude && longitude) {
       fetch(
-        `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${keyApi}&units=metric`
+        `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=4a64a166460e5c4f31b7e16f9888c463&units=metric`
       )
-        .then((result) => result.json())
-        .then((jsonresult) => {
-          setCity(jsonresult.name);
-          setCountry(jsonresult.sys.country);
-          setTemp(jsonresult.main.temp);
-          setMain(jsonresult.weather[0].main);
-          setDesc(jsonresult.weather[0].description);
-          setIcon(jsonresult.weather[0].icon);
-          setSunrise(jsonresult.sys.sunrise);
-          setSunset(jsonresult.sys.sunset);
+        .then((response) => response.json())
+        .then((data) => {
+          setWeatherData(data);
           setReady(true);
         })
-        .catch((err) => console.error(err));
+        .catch((error) => {
+          console.error("Error fetching weather data:", error);
+        });
     }
   }, [latitude, longitude]);
 
-  const handleLatitudeChange = (e) => {
-    setLatitude(e.target.value);
-  };
-
-  const handleLongitudeChange = (e) => {
-    setLongitude(e.target.value);
-  };
-
-  let theme = '';
-  if (isReady) {
-    if (temp < 10) {
-      theme = 'table-primary';
-    } else if (temp >= 10 && temp <20) {
-      theme = 'table-info';
-    }else if (temp >= 20 && temp <50) {
-      theme = 'table-warning';
-    } else {
-      theme = 'table-danger';
+  const handleFormSubmit = (event) => {
+    event.preventDefault();
+    // Trigger weather data fetching when latitude and longitude are provided
+    if (latitude && longitude) {
+      setReady(false); // Reset ready state
     }
+  };
+
+  if (!isReady) {
+    return (
+      <Container className="mt-5">
+        <Row className="justify-content-center">
+          <Col md={6}>
+            <Form onSubmit={handleFormSubmit}>
+              <Form.Group controlId="latitude">
+                <Form.Label>Latitude:</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={latitude}
+                  onChange={(e) => setLatitude(e.target.value)}
+                />
+              </Form.Group>
+              <Form.Group controlId="longitude">
+                <Form.Label>Longitude:</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={longitude}
+                  onChange={(e) => setLongitude(e.target.value)}
+                />
+              </Form.Group>
+              <Button variant="primary" type="submit">
+                Get Weather
+              </Button>
+            </Form>
+          </Col>
+        </Row>
+      </Container>
+    );
   }
 
+  // Vérification de nullité pour éviter les erreurs
+  const temperature = weatherData?.main?.temp;
+  const description = weatherData?.weather[0]?.description;
+  const humidity = weatherData?.main?.humidity;
+  const windSpeed = weatherData?.wind?.speed;
+  const icon = weatherData?.weather[0]?.icon;
+
   return (
-    <div>
-      <div class="bar"><h1>MY WEATHER APP</h1></div>
-      <h5>Saisissez une latitude et une longitude valides</h5>
-      <form > 
-      <div class="row" >
-        <div class="col">
-        <input
-          type="text"
-          id="latitude"
-          value={latitude}
-          class="form-control" placeholder="Latitude"
-          onChange={handleLatitudeChange}
-        />
-        </div>
-        <div class="col">
-        <input
-          type="text"
-          id="longitude"
-          value={longitude}
-          class="form-control" placeholder="Longitude"
-          onChange={handleLongitudeChange}
-        />
-        </div>
-      </div>
-      </form>
-      {isReady ? (
-        <div>
-          <WeatherInfo country={country} theme={theme} city={city} temp={temp} main={main} icon={icon} sunrise={sunrise} sunset={sunset} description={desc} />
-        </div>
-      ) : (
-        <div></div>
-      )}
-    </div>
+    <Container className="mt-5">
+      <Row className="justify-content-center">
+        <Col md={6}>
+          <div className="text-center">
+            <h1>Weather Information</h1>
+            <p>Location: {weatherData.name}</p>
+            <p>Temperature: {temperature} °C</p>
+            <p>Description: {description}</p>
+            <p>Humidity: {humidity}%</p>
+            <p>Wind Speed: {windSpeed} m/s</p>
+            <img
+              src={`http://openweathermap.org/img/wn/${icon}@2x.png`}
+              alt="Weather icon"
+            />
+          </div>
+        </Col>
+      </Row>
+    </Container>
   );
 }
 
